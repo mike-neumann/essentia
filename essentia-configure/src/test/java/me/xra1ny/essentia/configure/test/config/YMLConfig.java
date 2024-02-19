@@ -14,8 +14,5 @@ public class YMLConfig extends Config {
     public UUID testUuid;
 
     @Property
-    public YMLObject testObject;
-
-    @Property
     public List<YMLObject> testObjectList;
 }

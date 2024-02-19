@@ -1,9 +1,11 @@
 package me.xra1ny.essentia.configure.test.config;
 
 import lombok.ToString;
+import me.xra1ny.essentia.configs.annotation.ConfigObject;
 import me.xra1ny.essentia.configs.annotation.Property;
 
 @ToString
+@ConfigObject
 public class YMLObject {
     @Property
     public String testString;

@@ -2,6 +2,8 @@ package me.xra1ny.essentia.configs.processor;
 
 import lombok.Getter;
 import lombok.NonNull;
+import me.xra1ny.essentia.configs.annotation.ConfigObject;
+import org.reflections.Reflections;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.TypeDescription;
@@ -43,7 +45,7 @@ public class YMLFileProcessor implements FileProcessor {
 
         final Representer representer = new Representer(dumperOptions);
 
-        yaml = new Yaml(constructor, representer);
+        yaml = new Yaml(constructor, representer, dumperOptions, loaderOptions);
     }
 
     private void addTypeDescriptors(@NonNull Class<?> type) {
@@ -75,9 +77,12 @@ public class YMLFileProcessor implements FileProcessor {
         // add type descriptors for complex types...
         addTypeDescriptors(type);
 
-        final Map<String, Object> data = yaml.load(new FileReader(file));
+        // add type descriptors for all objects marked with @ConfigObject
+        for(Class<?> subType : new Reflections(type).getTypesAnnotatedWith(ConfigObject.class)) {
+            addTypeDescriptors(subType);
+        }
 
-        System.out.println("load: " + data);
+        final Map<String, Object> data = yaml.load(new FileReader(file));
 
         if (data != null) {
             this.data.putAll(data);
