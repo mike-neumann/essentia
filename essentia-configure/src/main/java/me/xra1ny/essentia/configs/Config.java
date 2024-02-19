@@ -14,36 +14,35 @@ import java.util.Optional;
 
 /**
  * @apiNote Must be annotated with {@link ConfigInfo}.
- * @param <T>
  */
-public abstract class Config<T> {
+public abstract class Config {
     /**
      * Defines the processor for this config.
      */
     @NonNull
-    private FileProcessor<T> fileProcessor;
+    private FileProcessor fileProcessor;
 
     public Config() {
         final ConfigInfo info = Optional.ofNullable(getClass().getAnnotation(ConfigInfo.class))
                 .orElseThrow(() -> new RuntimeException("Config needs to be annotated with @ConfigInfo!"));
 
-        load(info.value(), (Class<? extends FileProcessor<T>>) info.processor());
+        load(info.value(), info.processor());
     }
 
     public void save() {
         try {
             fileProcessor.save(fileProcessor.serialize(this));
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
     }
 
-    private void load(@NonNull String fileName, @NonNull Class<? extends FileProcessor<T>> processor) {
+    private void load(@NonNull String fileName, @NonNull Class<? extends FileProcessor> processor) {
         try {
             final File file = createFile(fileName);
 
             // attempt to create default processor instance.
-            final Constructor<? extends FileProcessor<T>> defaultConstructor = processor.getDeclaredConstructor(File.class);
+            final Constructor<? extends FileProcessor> defaultConstructor = processor.getDeclaredConstructor(File.class);
 
             fileProcessor = defaultConstructor.newInstance(file);
 
@@ -77,7 +76,7 @@ public abstract class Config<T> {
         return file;
     }
 
-    private void injectFields(@NonNull Map<String, T> serializedContentMap) {
+    private void injectFields(@NonNull Map<String, ?> serializedContentMap) {
         serializedContentMap
                 .forEach((key, value) -> {
                     final Optional<Field> optionalField = fileProcessor.getFieldByProperty(getClass(), key);
@@ -88,15 +87,14 @@ public abstract class Config<T> {
 
     private void injectField(@NonNull Field field, @NonNull Object value) {
         try {
-            // when the value we are trying to inject is an instance of a map, we want to deserialize it to a complex object.
-            if (value instanceof Map<?, ?> map) {
-                try {
-                    value = fileProcessor.deserialize((Map<String, T>) map, (Class<Object>) value.getClass());
-                } catch (Exception e) {
-                    throw new RuntimeException("error while deserializing " + value.getClass().getSimpleName());
-                }
-            }
-
+//            // when the value we are trying to inject is an instance of a map, we want to deserialize it to a complex object.
+//            if (value instanceof Map<?, ?> map) {
+//                try {
+//                    value = fileProcessor.deserialize((Map<String, T>) map, (Class<Object>) value.getClass());
+//                } catch (Exception e) {
+//                    throw new RuntimeException("error while deserializing " + value.getClass().getSimpleName());
+//                }
+//            }
             field.set(this, value);
         } catch (IllegalAccessException e) {
             throw new RuntimeException("error while injecting field " + field.getName() + " with " + value);

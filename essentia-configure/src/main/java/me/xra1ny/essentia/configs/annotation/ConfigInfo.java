@@ -31,5 +31,5 @@ public @interface ConfigInfo {
      * @apiNote {@link FileProcessor}s are used to process config files.
      * @return The processor used by this config.
      */
-    Class<? extends FileProcessor<?>> processor() default PropertiesFileProcessor.class;
+    Class<? extends FileProcessor> processor() default PropertiesFileProcessor.class;
 }

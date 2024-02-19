@@ -14,9 +14,8 @@ import java.util.Optional;
  * Describes an object which is capable of processing the contents of a given config file.
  *
  * @author xRa1ny
- * @param <T> The main value type used by this file processors key values.
  */
-public interface FileProcessor<T> {
+public interface FileProcessor {
     /**
      * Loads the file processed by this processor.
      *
@@ -24,7 +23,7 @@ public interface FileProcessor<T> {
      * @return The serialized content of this config.
      * @throws Exception If any error occurs while loading the config.
      */
-    Map<String, T> load(@NonNull Class<?> type) throws Exception;
+    Map<String, ?> load(@NonNull Class<?> type) throws Exception;
 
     /**
      * Reads a config value by the specified key.
@@ -32,7 +31,7 @@ public interface FileProcessor<T> {
      * @param key The key.
      * @return The value the given config key holds.
      */
-    T read(@NonNull String key);
+    Object read(@NonNull String key);
 
     /**
      *
@@ -42,14 +41,14 @@ public interface FileProcessor<T> {
      * @param def The default value.
      * @return The value of the given config key.
      */
-    T read(@NonNull String key, @NonNull T def);
+    Object read(@NonNull String key, @NonNull Object def);
 
     /**
      * Writes the given serialized content to this config.
      *
      * @param serializedContentMap The serialized content to write to this config.
      */
-    void write(@NonNull Map<String, T> serializedContentMap);
+    void write(@NonNull Map<String, ?> serializedContentMap);
 
     /**
      * Writes the given object to this config.
@@ -65,7 +64,7 @@ public interface FileProcessor<T> {
      * @param value The value.
      * @throws Exception If any error occurs while writing the value.
      */
-    void write(@NonNull String key, @NonNull T value) throws Exception;
+    void write(@NonNull String key, @NonNull Object value) throws Exception;
 
     /**
      * Saves the given serialized content to this config.
@@ -73,7 +72,7 @@ public interface FileProcessor<T> {
      * @param serializedContentMap The serialized content.
      * @throws Exception If any error occurs while saving the content.
      */
-    void save(@NonNull Map<String, T> serializedContentMap) throws Exception;
+    void save(@NonNull Map<String, ?> serializedContentMap) throws Exception;
 
     /**
      * Serializes the given object for config usage.
@@ -82,7 +81,7 @@ public interface FileProcessor<T> {
      * @return The serialized object.
      * @throws Exception If any error occurs while serialization.
      */
-    Map<String, T> serialize(@NonNull Object object) throws Exception;
+    Map<String, ?> serialize(@NonNull Object object) throws Exception;
 
     /**
      * Deserializes the given serialized map to the specified object type.
@@ -92,7 +91,7 @@ public interface FileProcessor<T> {
      * @return The deserialized object.
      * @throws Exception If any error occurs while deserializing.
      */
-    Object deserialize(@NonNull Map<String, T> serializedContentMap, @NonNull Class<Object> type) throws Exception;
+    Object deserialize(@NonNull Map<String, ?> serializedContentMap, @NonNull Class<Object> type) throws Exception;
 
     /**
      * Gets all property fields of the given type.
@@ -108,6 +107,19 @@ public interface FileProcessor<T> {
     }
 
     /**
+     * Gets all non property fields of the given type.
+     *
+     * @param type The type to fetch all non property fields from.
+     * @return All non property fields of the given type.
+     */
+    @NonNull
+    default List<Field> getNonPropertyFieldList(@NonNull Class<?> type) {
+        return Arrays.stream(type.getDeclaredFields())
+                .filter(field -> !field.isAnnotationPresent(Property.class))
+                .toList();
+    }
+
+    /**
      * Fetches a field of the given type by its property string.
      *
      * @param type The type to fetch the field from.
@@ -117,7 +129,7 @@ public interface FileProcessor<T> {
     @NonNull
     default Optional<Field> getFieldByProperty(@NonNull Class<?> type, @NonNull String property) {
         return getPropertyFieldList(type).stream()
-                .filter(field -> field.getAnnotation(Property.class).value().equals(property))
+                .filter(field -> field.getName().equals(property))
                 .findFirst();
     }
 }

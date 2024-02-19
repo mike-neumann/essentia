@@ -9,12 +9,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 
 
-public class PropertiesFileProcessor implements FileProcessor<String> {
+public class PropertiesFileProcessor implements FileProcessor {
     @NonNull
     private final File file;
 
@@ -39,12 +37,12 @@ public class PropertiesFileProcessor implements FileProcessor<String> {
     }
 
     @Override
-    public String read(@NonNull String key, @NonNull String def) {
-        return properties.getProperty(key, def);
+    public Object read(@NonNull String key, @NonNull Object def) {
+        return properties.getProperty(key, String.valueOf(def));
     }
 
     @Override
-    public void write(@NonNull Map<String, String> serializedContentMap) {
+    public void write(@NonNull Map<String, ?> serializedContentMap) {
         serializedContentMap.forEach(this::write);
     }
 
@@ -54,39 +52,40 @@ public class PropertiesFileProcessor implements FileProcessor<String> {
     }
 
     @Override
-    public void write(@NonNull String key, @NonNull String value) {
-        properties.setProperty(key, value);
+    public void write(@NonNull String key, @NonNull Object value) {
+        properties.setProperty(key, String.valueOf(value));
     }
 
     @Override
-    public void save(@NonNull Map<String, String> serializedContentMap) throws Exception {
-        serializedContentMap
-                .forEach(properties::setProperty);
+    public void save(@NonNull Map<String, ?> serializedContentMap) throws Exception {
+        serializedContentMap.entrySet().stream()
+                .map((entry) -> Map.entry(entry.getKey(), String.valueOf(entry.getValue())))
+                .forEach((entry) -> properties.setProperty(entry.getKey(), entry.getValue()));
 
         properties.store(new FileWriter(file), null);
     }
 
     @Override
     public Map<String, String> serialize(@NonNull Object object) {
-        return Map.ofEntries(getPropertyFieldList(object.getClass()).stream()
+        Map<String, String> stringObjectMap = new HashMap<>();
+
+        getPropertyFieldList(object.getClass()).stream()
+                .filter(field -> String.class.isAssignableFrom(field.getType()))
                 .map(field -> {
                     try {
-                        final Optional<Property> optionalProperty = Optional.ofNullable(field.getAnnotation(Property.class));
-
-                        if(optionalProperty.isPresent()) {
-                            return Map.entry(optionalProperty.get().value(), field.get(object));
-                        }
-
-                        return Map.entry(field.getName(), field.get(object));
+                        // else use default snakeyaml mapping.
+                        return new AbstractMap.SimpleEntry<>(field.getName(), field.get(object));
                     } catch (IllegalAccessException e) {
                         throw new RuntimeException(e);
                     }
                 })
-                .toArray(Map.Entry[]::new));
+                .forEach((entry) -> stringObjectMap.put(entry.getKey(), (String) entry.getValue()));
+
+        return stringObjectMap;
     }
 
     @Override
-    public Object deserialize(@NonNull Map<String, String> serializedContentMap, @NonNull Class<Object> type) throws Exception {
+    public Object deserialize(@NonNull Map<String, ?> serializedContentMap, @NonNull Class<Object> type) throws Exception {
         try {
             final Constructor<?> defaultConstructor = type.getConstructor();
             final Object object = defaultConstructor.newInstance();

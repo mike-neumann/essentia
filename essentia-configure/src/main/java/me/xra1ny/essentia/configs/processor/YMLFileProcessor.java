@@ -2,21 +2,23 @@ package me.xra1ny.essentia.configs.processor;
 
 import lombok.Getter;
 import lombok.NonNull;
-import me.xra1ny.essentia.configs.annotation.Property;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.representer.Representer;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class YMLFileProcessor implements FileProcessor<Object> {
+public class YMLFileProcessor implements FileProcessor {
     @NonNull
     private final File file;
 
@@ -33,14 +35,36 @@ public class YMLFileProcessor implements FileProcessor<Object> {
         final LoaderOptions loaderOptions = new LoaderOptions();
 
         loaderOptions.setTagInspector(tag -> true);
-        yaml = new Yaml(loaderOptions);
+
+        final org.yaml.snakeyaml.constructor.Constructor constructor = new org.yaml.snakeyaml.constructor.Constructor(loaderOptions);
+        final DumperOptions dumperOptions = new DumperOptions();
+
+        dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+
+        final Representer representer = new Representer(dumperOptions);
+
+        yaml = new Yaml(constructor, representer);
     }
 
-    private void addTypeDescriptor(@NonNull Class<?> type) {
-        for(Field field : getPropertyFieldList(type)) {
-            yaml.addTypeDescription(new TypeDescription(field.getType(), "!" + field.getType().getSimpleName()));
+    private void addTypeDescriptors(@NonNull Class<?> type) {
+        final TypeDescription rootTypeDescription = new TypeDescription(type, "!" + type.getSimpleName());
+        final String[] rootExcludes = getNonPropertyFieldList(type).stream()
+                .map(Field::getName)
+                .toArray(String[]::new);
 
-            addTypeDescriptor(field.getType());
+        rootTypeDescription.setExcludes(rootExcludes);
+        yaml.addTypeDescription(rootTypeDescription);
+
+        for (Field field : getPropertyFieldList(type)) {
+            final TypeDescription typeDescription = new TypeDescription(field.getType(), "!" + field.getType().getSimpleName());
+            final String[] excludes = getNonPropertyFieldList(field.getType()).stream()
+                    .map(Field::getName)
+                    .toArray(String[]::new);
+
+            typeDescription.setExcludes(excludes);
+            yaml.addTypeDescription(typeDescription);
+
+            addTypeDescriptors(field.getType());
         }
     }
 
@@ -49,11 +73,13 @@ public class YMLFileProcessor implements FileProcessor<Object> {
         data.clear();
 
         // add type descriptors for complex types...
-        addTypeDescriptor(type);
+        addTypeDescriptors(type);
 
         final Map<String, Object> data = yaml.load(new FileReader(file));
 
-        if(data != null) {
+        System.out.println("load: " + data);
+
+        if (data != null) {
             this.data.putAll(data);
         }
 
@@ -71,7 +97,7 @@ public class YMLFileProcessor implements FileProcessor<Object> {
     }
 
     @Override
-    public void write(@NonNull Map<String, Object> serializedContentMap) {
+    public void write(@NonNull Map<String, ?> serializedContentMap) {
         data.putAll(serializedContentMap);
     }
 
@@ -86,34 +112,31 @@ public class YMLFileProcessor implements FileProcessor<Object> {
     }
 
     @Override
-    public void save(@NonNull Map<String, Object> serializedContentMap) throws Exception {
+    public void save(@NonNull Map<String, ?> serializedContentMap) throws Exception {
         data.putAll(serializedContentMap);
         yaml.dump(data, new FileWriter(file));
     }
 
     @Override
     public Map<String, Object> serialize(@NonNull Object object) throws Exception {
-        return Map.ofEntries(getPropertyFieldList(object.getClass()).stream()
+        final Map<String, Object> stringObjectMap = new HashMap<>();
+
+        getPropertyFieldList(object.getClass()).stream()
                 .map(field -> {
                     try {
-                        final Optional<Property> optionalProperty = Optional.ofNullable(field.getAnnotation(Property.class));
-
-                        if(optionalProperty.isPresent()) {
-                            final Property property = optionalProperty.get();
-
-                            return Map.entry(property.value(), field.get(object));
-                        }
-
-                        return Map.entry(field.getName(), field.get(object));
-                    } catch (IllegalAccessException e) {
+                        // else use default snakeyaml mapping.
+                        return new AbstractMap.SimpleEntry<>(field.getName(), field.get(object));
+                    } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 })
-                .toArray(Map.Entry[]::new));
+                .forEach((entry) -> stringObjectMap.put(entry.getKey(), entry.getValue()));
+
+        return stringObjectMap;
     }
 
     @Override
-    public Object deserialize(@NonNull Map<String, Object> serializedContentMap, @NonNull Class<Object> type) throws Exception {
+    public Object deserialize(@NonNull Map<String, ?> serializedContentMap, @NonNull Class<Object> type) throws Exception {
         try {
             final Constructor<?> defaultConstructor = type.getConstructor();
             final Object object = defaultConstructor.newInstance();
@@ -133,7 +156,7 @@ public class YMLFileProcessor implements FileProcessor<Object> {
                     });
 
             return object;
-        }catch(NoSuchMethodException e) {
+        } catch (NoSuchMethodException e) {
             // default constructor not found, attempt to get constructor matching properties...
             final Constructor<?> constructor = type.getConstructor(getPropertyFieldList(type).stream().map(Object::getClass).toArray(Class[]::new));
 

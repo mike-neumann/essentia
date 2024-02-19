@@ -5,13 +5,17 @@ import me.xra1ny.essentia.configs.annotation.ConfigInfo;
 import me.xra1ny.essentia.configs.annotation.Property;
 import me.xra1ny.essentia.configs.processor.YMLFileProcessor;
 
+import java.util.List;
 import java.util.UUID;
 
 @ConfigInfo(value = "test.yml", processor = YMLFileProcessor.class)
-public class YMLConfig extends Config<Object> {
-    @Property("test-uuid")
+public class YMLConfig extends Config {
+    @Property
     public UUID testUuid;
 
-    @Property("test-object")
+    @Property
     public YMLObject testObject;
+
+    @Property
+    public List<YMLObject> testObjectList;
 }

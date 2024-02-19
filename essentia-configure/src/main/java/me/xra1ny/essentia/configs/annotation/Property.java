@@ -16,10 +16,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Property {
-    /**
-     * Defines the config key under which this annotated field is mapped.
-     *
-     * @return The config key.
-     */
-    String value();
+
 }
