@@ -6,6 +6,6 @@ import me.xra1ny.essentia.configs.annotation.Property;
 
 @ConfigInfo("test.properties")
 public class PropertiesConfig extends Config {
-    @Property
+    @Property(String.class)
     public String testString;
 }

@@ -2,8 +2,7 @@ package me.xra1ny.essentia.configs.processor;
 
 import lombok.Getter;
 import lombok.NonNull;
-import me.xra1ny.essentia.configs.annotation.ConfigObject;
-import org.reflections.Reflections;
+import me.xra1ny.essentia.configs.annotation.Property;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.TypeDescription;
@@ -58,6 +57,7 @@ public class YMLFileProcessor implements FileProcessor {
         yaml.addTypeDescription(rootTypeDescription);
 
         for (Field field : getPropertyFieldList(type)) {
+            final Property property = field.getAnnotation(Property.class);
             final TypeDescription typeDescription = new TypeDescription(field.getType(), "!" + field.getType().getSimpleName());
             final String[] excludes = getNonPropertyFieldList(field.getType()).stream()
                     .map(Field::getName)
@@ -65,6 +65,11 @@ public class YMLFileProcessor implements FileProcessor {
 
             typeDescription.setExcludes(excludes);
             yaml.addTypeDescription(typeDescription);
+
+            // add type descriptors for annotated property types...
+            for(Class<?> propertyType : property.value()) {
+                addTypeDescriptors(propertyType);
+            }
 
             addTypeDescriptors(field.getType());
         }
@@ -76,11 +81,6 @@ public class YMLFileProcessor implements FileProcessor {
 
         // add type descriptors for complex types...
         addTypeDescriptors(type);
-
-        // add type descriptors for all objects marked with @ConfigObject
-        for(Class<?> subType : new Reflections(type).getTypesAnnotatedWith(ConfigObject.class)) {
-            addTypeDescriptors(subType);
-        }
 
         final Map<String, Object> data = yaml.load(new FileReader(file));
 

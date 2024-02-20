@@ -6,6 +6,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Defines a field within an {@link Config} extending class to be a key.
@@ -16,5 +18,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Property {
-
+    /**
+     * Defines the class types this annotated field manages.
+     *
+     * @apiNote When annotating a {@link List} or {@link Map}, specify their generic types.
+     * @return The classes this annotated field manages.
+     */
+    Class<?>[] value();
 }

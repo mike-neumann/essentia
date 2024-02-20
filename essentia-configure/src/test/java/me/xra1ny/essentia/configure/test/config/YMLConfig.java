@@ -10,9 +10,9 @@ import java.util.UUID;
 
 @ConfigInfo(value = "test.yml", processor = YMLFileProcessor.class)
 public class YMLConfig extends Config {
-    @Property
+    @Property(UUID.class)
     public UUID testUuid;
 
-    @Property
+    @Property(YMLObject.class)
     public List<YMLObject> testObjectList;
 }
