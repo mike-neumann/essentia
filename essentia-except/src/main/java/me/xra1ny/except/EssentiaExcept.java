@@ -22,10 +22,10 @@ import java.util.logging.Logger;
 public class EssentiaExcept {
     @Getter
     @NonNull
-    private static final List<String> packageNameList = new ArrayList<>();
+    private static final List<String> packageNames = new ArrayList<>();
 
     private static List<Method> getExceptionHandlerMethods() {
-        return new Reflections(packageNameList, new MethodAnnotationsScanner()).getMethodsAnnotatedWith(ExceptionHandler.class).stream()
+        return new Reflections(packageNames, new MethodAnnotationsScanner()).getMethodsAnnotatedWith(ExceptionHandler.class).stream()
                 .filter(method -> {
                     if(!Modifier.isStatic(method.getModifiers())) {
                         throw new ExceptionHandlerMethodNotStaticException(method);
@@ -44,7 +44,7 @@ public class EssentiaExcept {
     }
 
     public static void run(@NonNull String @NonNull ... packageNames) {
-        packageNameList.addAll(List.of(packageNames));
+        EssentiaExcept.packageNames.addAll(List.of(packageNames));
 
         final List<Method> exceptionHandlerMethodsList = getExceptionHandlerMethods();
 
@@ -52,7 +52,7 @@ public class EssentiaExcept {
     }
 
     public static void run(@NonNull Logger logger, @NonNull String @NonNull ... packageNames) {
-        packageNameList.addAll(List.of(packageNames));
+        EssentiaExcept.packageNames.addAll(List.of(packageNames));
 
         final List<Method> exceptionHandlerMethodsList = getExceptionHandlerMethods();
 

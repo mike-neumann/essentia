@@ -7,6 +7,7 @@ import java.util.Arrays;
 
 public class ScheduledMethodInvalidSignatureException extends RuntimeException {
     public ScheduledMethodInvalidSignatureException(@NonNull Method method) {
-        super("invalid signature " + Arrays.toString(method.getParameterTypes()) + " for method " + method.getName());
+        super("invalid signature %s for method %s"
+                .formatted(Arrays.toString(method.getParameterTypes()), method.getName()));
     }
 }

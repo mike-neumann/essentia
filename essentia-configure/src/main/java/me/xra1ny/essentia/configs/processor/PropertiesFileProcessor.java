@@ -2,7 +2,7 @@ package me.xra1ny.essentia.configs.processor;
 
 import lombok.Getter;
 import lombok.NonNull;
-import me.xra1ny.essentia.configs.annotation.Property;
+import lombok.extern.java.Log;
 
 import java.io.File;
 import java.io.FileReader;
@@ -12,6 +12,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 
+@Log
 public class PropertiesFileProcessor implements FileProcessor {
     @NonNull
     private final File file;
@@ -69,14 +70,15 @@ public class PropertiesFileProcessor implements FileProcessor {
     public Map<String, String> serialize(@NonNull Object object) {
         Map<String, String> stringObjectMap = new HashMap<>();
 
-        getPropertyFieldList(object.getClass()).stream()
+        getPropertyFieldsFromType(object.getClass()).stream()
                 .filter(field -> String.class.isAssignableFrom(field.getType()))
                 .map(field -> {
                     try {
                         // else use default snakeyaml mapping.
                         return new AbstractMap.SimpleEntry<>(field.getName(), field.get(object));
                     } catch (IllegalAccessException e) {
-                        throw new RuntimeException(e);
+                        throw new RuntimeException("error while serializing properties config field %s"
+                                .formatted(field.getName()));
                     }
                 })
                 .forEach((entry) -> stringObjectMap.put(entry.getKey(), (String) entry.getValue()));
@@ -99,7 +101,8 @@ public class PropertiesFileProcessor implements FileProcessor {
                             try {
                                 field.set(object, value);
                             } catch (IllegalAccessException e) {
-                                throw new RuntimeException(e);
+                                throw new RuntimeException("error while deserializing properties config field %s"
+                                        .formatted(field.getName()));
                             }
                         });
                     });
@@ -107,7 +110,7 @@ public class PropertiesFileProcessor implements FileProcessor {
             return object;
         }catch(NoSuchMethodException e) {
             // default constructor not found, attempt to get constructor matching properties...
-            final Constructor<?> constructor = type.getConstructor(getPropertyFieldList(type).stream().map(Object::getClass).toArray(Class[]::new));
+            final Constructor<?> constructor = type.getConstructor(getPropertyFieldsFromType(type).stream().map(Object::getClass).toArray(Class[]::new));
 
             // constructor found, create new instance with this constructor...
 

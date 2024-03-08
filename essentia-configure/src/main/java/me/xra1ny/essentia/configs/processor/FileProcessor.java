@@ -100,7 +100,7 @@ public interface FileProcessor {
      * @return All property fields of the given type.
      */
     @NonNull
-    default List<Field> getPropertyFieldList(@NonNull Class<?> type) {
+    default List<Field> getPropertyFieldsFromType(@NonNull Class<?> type) {
         return Arrays.stream(type.getDeclaredFields())
                 .filter(field -> field.isAnnotationPresent(Property.class))
                 .toList();
@@ -113,7 +113,7 @@ public interface FileProcessor {
      * @return All non property fields of the given type.
      */
     @NonNull
-    default List<Field> getNonPropertyFieldList(@NonNull Class<?> type) {
+    default List<Field> getNonPropertyFieldsFromType(@NonNull Class<?> type) {
         return Arrays.stream(type.getDeclaredFields())
                 .filter(field -> !field.isAnnotationPresent(Property.class))
                 .toList();
@@ -128,7 +128,7 @@ public interface FileProcessor {
      */
     @NonNull
     default Optional<Field> getFieldByProperty(@NonNull Class<?> type, @NonNull String property) {
-        return getPropertyFieldList(type).stream()
+        return getPropertyFieldsFromType(type).stream()
                 .filter(field -> field.getName().equals(property))
                 .findFirst();
     }

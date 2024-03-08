@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 
 public class ScheduledMethodNotStaticException extends RuntimeException {
     public ScheduledMethodNotStaticException(@NonNull Method method) {
-        super("method " + method.getName() + " must be static");
+        super("method %s must be static"
+                .formatted(method.getName()));
     }
 }

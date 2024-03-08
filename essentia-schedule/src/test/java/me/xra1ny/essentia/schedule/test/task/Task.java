@@ -9,7 +9,8 @@ public class Task {
 
     @Scheduled(1_000)
     public static void scheduled() {
-        log.info("tick! " + tickCount);
+        log.info("tick! %d"
+                .formatted(tickCount));
         tickCount++;
     }
 }

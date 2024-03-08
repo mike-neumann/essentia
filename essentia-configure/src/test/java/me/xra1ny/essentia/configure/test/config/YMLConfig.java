@@ -8,7 +8,7 @@ import me.xra1ny.essentia.configs.processor.YMLFileProcessor;
 import java.util.List;
 import java.util.UUID;
 
-@ConfigInfo(value = "test.yml", processor = YMLFileProcessor.class)
+@ConfigInfo(name = "test.yml", processor = YMLFileProcessor.class)
 public class YMLConfig extends Config {
     @Property(UUID.class)
     public UUID testUuid;

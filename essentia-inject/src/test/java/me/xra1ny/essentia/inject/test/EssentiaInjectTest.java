@@ -8,7 +8,9 @@ public class EssentiaInjectTest {
     public static void main(String[] args) {
         EssentiaInject.run(EssentiaInjectTest.class.getPackageName());
 
-        log.info("injectable: " + EssentiaInject.getComponentClassList());
-        log.info("injected: " + EssentiaInject.getDiContainer().getComponentClassObjectMap());
+        log.info("injectable: %s"
+                .formatted(EssentiaInject.getComponentClassList()));
+        log.info("injected: %s"
+                .formatted(EssentiaInject.getDiContainer().getComponentClassObjectMap()));
     }
 }

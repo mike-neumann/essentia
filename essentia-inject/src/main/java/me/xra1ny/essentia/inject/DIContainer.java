@@ -12,24 +12,23 @@ import java.util.Optional;
  * @author xRa1ny
  */
 public interface DIContainer {
-
     @NonNull
     Map<Class<?>, Object> getComponentClassObjectMap();
 
-    default List<Object> getComponentList() {
+    default List<Object> getComponents() {
         return getComponentClassObjectMap().values().stream()
                 .toList();
     }
 
-    default <T> List<T> getComponentList(@NonNull Class<T> type) {
-        return getComponentList().stream()
+    default <T> List<T> getComponentsByType(@NonNull Class<T> type) {
+        return getComponents().stream()
                 .filter(component -> type.isAssignableFrom(component.getClass()))
                 .map(type::cast)
                 .toList();
     }
 
-    default boolean isRegistered(@NonNull Class<?> clazz) {
-        return getComponentClassObjectMap().containsKey(clazz);
+    default boolean isRegisteredByType(@NonNull Class<?> type) {
+        return getComponentClassObjectMap().containsKey(type);
     }
 
     /**
@@ -44,22 +43,22 @@ public interface DIContainer {
 
     void registerComponent(@NonNull Object object);
 
-    void unregisterComponent(@NonNull Class<?> type);
+    void unregisterComponentByType(@NonNull Class<?> type);
 
     void unregisterComponent(@NonNull Object object);
 
     /**
      * Gets the requested component object instance.
      *
-     * @param clazz The class.
+     * @param type The class.
      * @param <T>   The type.
      * @return The component object instance.
      */
-    default <T> Optional<T> getComponent(@NonNull Class<T> clazz) {
+    default <T> Optional<T> getComponentByType(@NonNull Class<T> type) {
         return getComponentClassObjectMap().entrySet().stream()
-                .filter(entry -> entry.getKey().equals(clazz))
+                .filter(entry -> entry.getKey().equals(type))
                 .map(Map.Entry::getValue)
-                .map(clazz::cast)
+                .map(type::cast)
                 .findFirst();
     }
 }

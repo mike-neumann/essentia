@@ -21,7 +21,8 @@ public class EssentiaDatabaseTest {
 
         final List<TestEntity> testEntities = testRepository.findAll();
 
-        log.info("testEntities: " + testEntities);
+        log.info("testEntities: %s"
+                .formatted(testEntities));
 
         final Optional<TestEntity> optionalTestEntity = testRepository.findByValue("username", "name1");
 

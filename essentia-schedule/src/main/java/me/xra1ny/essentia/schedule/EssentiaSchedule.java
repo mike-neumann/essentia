@@ -1,6 +1,7 @@
 package me.xra1ny.essentia.schedule;
 
 import lombok.NonNull;
+import lombok.extern.java.Log;
 import me.xra1ny.essentia.schedule.annotation.Scheduled;
 import me.xra1ny.essentia.schedule.exception.ScheduledMethodInvalidSignatureException;
 import org.reflections.Reflections;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+@Log
 public class EssentiaSchedule {
     /**
      * Initialises EssentiaSchedule on the given project's main class
@@ -46,7 +48,8 @@ public class EssentiaSchedule {
                                     try {
                                         method.invoke(this);
                                     } catch (IllegalAccessException | InvocationTargetException e) {
-                                        throw new RuntimeException(e);
+                                        log.severe("error while invoking scheduled method %s"
+                                                .formatted(method.getName()));
                                     }
                                 }
                             }, scheduled.value(), scheduled.value()

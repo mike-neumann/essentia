@@ -41,16 +41,17 @@ public class DIFactory {
                 try {
                     getInstance(dependency);
                 } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
+                    throw new RuntimeException("error while fetching dependency %s for component %s"
+                            .formatted(dependency.getSimpleName(), type.getSimpleName()));
                 }
             }
         });
 
         // attempt to fetch already registered instance...
-        if (EssentiaInject.getDiContainer().isRegistered(type)) {
+        if (EssentiaInject.getDiContainer().isRegisteredByType(type)) {
             recursiveChain.remove(type);
 
-            return EssentiaInject.getDiContainer().getComponent(type)
+            return EssentiaInject.getDiContainer().getComponentByType(type)
                     .orElseThrow();
         }
 
@@ -66,7 +67,8 @@ public class DIFactory {
                     try {
                         getInstance(after);
                     } catch (IllegalAccessException e) {
-                        throw new RuntimeException(e);
+                        throw new RuntimeException("error while fetching after dependency component %s for root component %s"
+                                .formatted(after.getSimpleName(), type.getSimpleName()));
                     }
                 }
             });
@@ -76,7 +78,8 @@ public class DIFactory {
             return component;
         } catch (NoSuchMethodException | InstantiationException | InvocationTargetException |
                  IllegalAccessException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("error while fetching component %s"
+                    .formatted(type.getSimpleName()));
         }
     }
 
@@ -122,7 +125,8 @@ public class DIFactory {
             }
 
             if (viableConstructor == null) {
-                throw new NoSuchMethodException("no dependency injectable constructor found for class " + type.getSimpleName());
+                throw new NoSuchMethodException("no dependency injectable constructor found for class %s"
+                        .formatted(type.getSimpleName()));
             }
 
             return viableConstructor;
@@ -146,7 +150,8 @@ public class DIFactory {
             final Optional<Class<? extends T>> optionalImplementation = getImplementation(type);
 
             if(optionalImplementation.isEmpty()) {
-                log.severe("No implementation found for " + type.getSimpleName());
+                log.severe("No implementation found for %s"
+                        .formatted(type.getSimpleName()));
             }
 
             return getInstance((Class<T>) optionalImplementation.get());
@@ -168,11 +173,12 @@ public class DIFactory {
                 recursiveChain.clear();
 
                 // if so, we are trying to inject circular dependencies, which are not possible.
-                throw new IllegalAccessException("circular dependency detected!  " + type.getSimpleName() + " <~> " + parameterType.getSimpleName());
+                throw new IllegalAccessException("circular dependency detected!  %s <~> %s"
+                        .formatted(type.getSimpleName(), parameterType.getSimpleName()));
             }
 
-            if (EssentiaInject.getDiContainer().isRegistered(parameterType)) {
-                constructorParameterList.add(EssentiaInject.getDiContainer().getComponent(parameterType)
+            if (EssentiaInject.getDiContainer().isRegisteredByType(parameterType)) {
+                constructorParameterList.add(EssentiaInject.getDiContainer().getComponentByType(parameterType)
                         .orElseThrow());
             } else {
                 // else create new component instance and register.

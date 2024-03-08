@@ -48,18 +48,20 @@ public class YMLFileProcessor implements FileProcessor {
     }
 
     private void addTypeDescriptors(@NonNull Class<?> type) {
-        final TypeDescription rootTypeDescription = new TypeDescription(type, "!" + type.getSimpleName());
-        final String[] rootExcludes = getNonPropertyFieldList(type).stream()
+        final TypeDescription rootTypeDescription = new TypeDescription(type, "!%s"
+                .formatted(type.getSimpleName()));
+        final String[] rootExcludes = getNonPropertyFieldsFromType(type).stream()
                 .map(Field::getName)
                 .toArray(String[]::new);
 
         rootTypeDescription.setExcludes(rootExcludes);
         yaml.addTypeDescription(rootTypeDescription);
 
-        for (Field field : getPropertyFieldList(type)) {
+        for (Field field : getPropertyFieldsFromType(type)) {
             final Property property = field.getAnnotation(Property.class);
-            final TypeDescription typeDescription = new TypeDescription(field.getType(), "!" + field.getType().getSimpleName());
-            final String[] excludes = getNonPropertyFieldList(field.getType()).stream()
+            final TypeDescription typeDescription = new TypeDescription(field.getType(), "!%s"
+                    .formatted(field.getType().getSimpleName()));
+            final String[] excludes = getNonPropertyFieldsFromType(field.getType()).stream()
                     .map(Field::getName)
                     .toArray(String[]::new);
 
@@ -126,13 +128,14 @@ public class YMLFileProcessor implements FileProcessor {
     public Map<String, Object> serialize(@NonNull Object object) throws Exception {
         final Map<String, Object> stringObjectMap = new HashMap<>();
 
-        getPropertyFieldList(object.getClass()).stream()
+        getPropertyFieldsFromType(object.getClass()).stream()
                 .map(field -> {
                     try {
                         // else use default snakeyaml mapping.
                         return new AbstractMap.SimpleEntry<>(field.getName(), field.get(object));
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        throw new RuntimeException("error while serializing yml config field %s"
+                                .formatted(field.getName()));
                     }
                 })
                 .forEach((entry) -> stringObjectMap.put(entry.getKey(), entry.getValue()));
@@ -155,7 +158,8 @@ public class YMLFileProcessor implements FileProcessor {
                             try {
                                 field.set(object, value);
                             } catch (IllegalAccessException e) {
-                                throw new RuntimeException(e);
+                                throw new RuntimeException("error while deserializing yml config field %s"
+                                        .formatted(field.getName()));
                             }
                         });
                     });
@@ -163,7 +167,7 @@ public class YMLFileProcessor implements FileProcessor {
             return object;
         } catch (NoSuchMethodException e) {
             // default constructor not found, attempt to get constructor matching properties...
-            final Constructor<?> constructor = type.getConstructor(getPropertyFieldList(type).stream().map(Object::getClass).toArray(Class[]::new));
+            final Constructor<?> constructor = type.getConstructor(getPropertyFieldsFromType(type).stream().map(Object::getClass).toArray(Class[]::new));
 
             // constructor found, create new instance with this constructor...
 

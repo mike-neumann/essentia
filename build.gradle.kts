@@ -22,6 +22,11 @@ allprojects {
         testAnnotationProcessor("org.projectlombok:lombok:1.18.30")
     }
 
+    java {
+        withSourcesJar()
+        withJavadocJar()
+    }
+
     publishing {
         publications {
             create<MavenPublication>("maven") {
@@ -32,5 +37,14 @@ allprojects {
                 from(components["java"])
             }
         }
+    }
+
+    tasks.javadoc {
+        (options as StandardJavadocDocletOptions)
+                .tags(
+                        "apiNote:a:API Note:",
+                        "implSpec:a:Implementation Requirements:",
+                        "implNote:a:Implementation Note:"
+                )
     }
 }

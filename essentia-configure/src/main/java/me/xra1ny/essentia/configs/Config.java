@@ -1,9 +1,11 @@
 package me.xra1ny.essentia.configs;
 
 import lombok.NonNull;
+import lombok.extern.java.Log;
 import me.xra1ny.essentia.configs.annotation.ConfigInfo;
 import me.xra1ny.essentia.configs.processor.FileProcessor;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -15,6 +17,7 @@ import java.util.Optional;
 /**
  * @apiNote Must be annotated with {@link ConfigInfo}.
  */
+@Log
 public abstract class Config {
     /**
      * Defines the processor for this config.
@@ -24,16 +27,16 @@ public abstract class Config {
 
     public Config() {
         final ConfigInfo info = Optional.ofNullable(getClass().getAnnotation(ConfigInfo.class))
-                .orElseThrow(() -> new RuntimeException("Config needs to be annotated with @ConfigInfo!"));
+                .orElseThrow(() -> new RuntimeException("config needs to be annotated with @ConfigInfo!"));
 
-        load(info.value(), info.processor());
+        load(info.name(), info.processor());
     }
 
     public void save() {
         try {
             fileProcessor.save(fileProcessor.serialize(this));
         } catch (Exception e) {
-            e.printStackTrace();
+            log.severe("error while saving config");
         }
     }
 
@@ -50,11 +53,13 @@ public abstract class Config {
                 // after everything has worked without problem, inject field of our config with the values now retrievable...
                 injectFields(fileProcessor.load(getClass()));
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                log.severe("error while injecting fields for config %s with processor %s"
+                        .formatted(fileName, processor.getSimpleName()));
             }
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
                  InvocationTargetException e) {
-            throw new RuntimeException("error while creating config file processor " + processor.getSimpleName() + " for config " + fileName);
+            log.severe("error while creating config file processor %s for config %s"
+                    .formatted(processor.getSimpleName(), fileName));
         }
     }
 
@@ -67,9 +72,15 @@ public abstract class Config {
             }
 
             try {
-                file.createNewFile();
+                final boolean fileCreated = file.createNewFile();
+
+                if(fileCreated) {
+                    log.info("%s config file created"
+                            .formatted(fileName));
+                }
             } catch (IOException e) {
-                throw new RuntimeException("error while creating config file " + fileName);
+                log.severe("error while creating config file %s"
+                        .formatted(fileName));
             }
         }
 
@@ -85,19 +96,12 @@ public abstract class Config {
                 });
     }
 
-    private void injectField(@NonNull Field field, @NonNull Object value) {
+    private void injectField(@NonNull Field field, @Nullable Object value) {
         try {
-//            // when the value we are trying to inject is an instance of a map, we want to deserialize it to a complex object.
-//            if (value instanceof Map<?, ?> map) {
-//                try {
-//                    value = fileProcessor.deserialize((Map<String, T>) map, (Class<Object>) value.getClass());
-//                } catch (Exception e) {
-//                    throw new RuntimeException("error while deserializing " + value.getClass().getSimpleName());
-//                }
-//            }
             field.set(this, value);
         } catch (IllegalAccessException e) {
-            throw new RuntimeException("error while injecting field " + field.getName() + " with " + value);
+            log.severe("error while injecting field %s with %s"
+                    .formatted(field.getName(), String.valueOf(value)));
         }
     }
 }

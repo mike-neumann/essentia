@@ -24,7 +24,7 @@ public class EssentiaDIContainer implements DIContainer {
     }
 
     @Override
-    public void unregisterComponent(@NonNull Class<?> type) {
+    public void unregisterComponentByType(@NonNull Class<?> type) {
         componentClassObjectMap.remove(type);
     }
 

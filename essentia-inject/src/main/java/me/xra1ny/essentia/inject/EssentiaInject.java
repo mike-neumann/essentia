@@ -36,15 +36,14 @@ public class EssentiaInject {
     private static void run() {
         final List<Class<?>> componentClassList = getComponentClassList();
 
-
-
         // attempt to get instance
         // this will also initialise any missing components
         componentClassList.forEach(componentClass -> {
             try {
                 DIFactory.getInstance(componentClass);
             } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("error while registering component %s"
+                        .formatted(componentClass.getSimpleName()));
             }
         });
     }

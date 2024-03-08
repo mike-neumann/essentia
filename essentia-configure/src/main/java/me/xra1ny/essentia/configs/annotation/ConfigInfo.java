@@ -2,7 +2,6 @@ package me.xra1ny.essentia.configs.annotation;
 
 import me.xra1ny.essentia.configs.Config;
 import me.xra1ny.essentia.configs.processor.FileProcessor;
-import me.xra1ny.essentia.configs.processor.PropertiesFileProcessor;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -23,7 +22,7 @@ public @interface ConfigInfo {
      * @apiNote Includes the file extension (e.g test.yml; test.properties)
      * @return The file name
      */
-    String value();
+    String name();
 
     /**
      * Defines the {@link FileProcessor} used by this config.
@@ -31,5 +30,5 @@ public @interface ConfigInfo {
      * @apiNote {@link FileProcessor}s are used to process config files.
      * @return The processor used by this config.
      */
-    Class<? extends FileProcessor> processor() default PropertiesFileProcessor.class;
+    Class<? extends FileProcessor> processor();
 }

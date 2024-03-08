@@ -25,7 +25,8 @@ public class UncaughtExceptionHandler extends Handler {
                     try {
                         method.invoke(this, e);
                     } catch (IllegalAccessException | InvocationTargetException ex) {
-                        throw new RuntimeException(ex);
+                        throw new RuntimeException("error while invoking exception handler method %s"
+                                .formatted(method.getName()));
                     }
                 });
     }
