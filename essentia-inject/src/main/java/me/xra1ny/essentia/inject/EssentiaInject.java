@@ -42,6 +42,7 @@ public class EssentiaInject {
             try {
                 DIFactory.getInstance(componentClass);
             } catch (IllegalAccessException e) {
+                e.printStackTrace();
                 throw new RuntimeException("error while registering component %s"
                         .formatted(componentClass.getSimpleName()));
             }

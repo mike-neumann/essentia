@@ -77,6 +77,7 @@ public class PropertiesFileProcessor implements FileProcessor {
                         // else use default snakeyaml mapping.
                         return new AbstractMap.SimpleEntry<>(field.getName(), field.get(object));
                     } catch (IllegalAccessException e) {
+                        e.printStackTrace();
                         throw new RuntimeException("error while serializing properties config field %s"
                                 .formatted(field.getName()));
                     }
@@ -101,6 +102,7 @@ public class PropertiesFileProcessor implements FileProcessor {
                             try {
                                 field.set(object, value);
                             } catch (IllegalAccessException e) {
+                                e.printStackTrace();
                                 throw new RuntimeException("error while deserializing properties config field %s"
                                         .formatted(field.getName()));
                             }

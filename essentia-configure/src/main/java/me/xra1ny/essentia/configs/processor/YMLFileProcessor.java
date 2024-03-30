@@ -134,6 +134,7 @@ public class YMLFileProcessor implements FileProcessor {
                         // else use default snakeyaml mapping.
                         return new AbstractMap.SimpleEntry<>(field.getName(), field.get(object));
                     } catch (Exception e) {
+                        e.printStackTrace();
                         throw new RuntimeException("error while serializing yml config field %s"
                                 .formatted(field.getName()));
                     }
@@ -158,6 +159,7 @@ public class YMLFileProcessor implements FileProcessor {
                             try {
                                 field.set(object, value);
                             } catch (IllegalAccessException e) {
+                                e.printStackTrace();
                                 throw new RuntimeException("error while deserializing yml config field %s"
                                         .formatted(field.getName()));
                             }

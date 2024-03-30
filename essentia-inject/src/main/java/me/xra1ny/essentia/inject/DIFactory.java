@@ -41,6 +41,7 @@ public class DIFactory {
                 try {
                     getInstance(dependency);
                 } catch (IllegalAccessException e) {
+                    e.printStackTrace();
                     throw new RuntimeException("error while fetching dependency %s for component %s"
                             .formatted(dependency.getSimpleName(), type.getSimpleName()));
                 }
@@ -67,6 +68,7 @@ public class DIFactory {
                     try {
                         getInstance(after);
                     } catch (IllegalAccessException e) {
+                        e.printStackTrace();
                         throw new RuntimeException("error while fetching after dependency component %s for root component %s"
                                 .formatted(after.getSimpleName(), type.getSimpleName()));
                     }
