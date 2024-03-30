@@ -27,7 +27,7 @@ public class DIFactory {
      * Attempts to get a dependency injected instance of the given class.
      *
      * @param type The class to dependency inject.
-     * @param <T>   The type.
+     * @param <T>  The type.
      * @return The dependency injected instance.
      */
     public static <T> T getInstance(@NonNull Class<T> type) throws IllegalAccessException {
@@ -37,7 +37,7 @@ public class DIFactory {
 
         optionalComponent.ifPresent(component -> {
             // initialize dependencies
-            for(Class<?> dependency : component.dependsOn()) {
+            for (Class<?> dependency : component.dependsOn()) {
                 try {
                     getInstance(dependency);
                 } catch (IllegalAccessException e) {
@@ -63,7 +63,7 @@ public class DIFactory {
 
             optionalComponent.ifPresent(componentAnnotation -> {
                 // initialize after...
-                for(Class<?> after : componentAnnotation.after()) {
+                for (Class<?> after : componentAnnotation.after()) {
                     try {
                         getInstance(after);
                     } catch (IllegalAccessException e) {
@@ -78,8 +78,10 @@ public class DIFactory {
             return component;
         } catch (NoSuchMethodException | InstantiationException | InvocationTargetException |
                  IllegalAccessException e) {
-            throw new RuntimeException("error while fetching component %s"
-                    .formatted(type.getSimpleName()));
+            // attempt to return any implementation of the requested component.
+            return getImplementation(type)
+                    .orElseThrow(() -> new RuntimeException("error while fetching component %s"
+                            .formatted(type.getSimpleName())));
         }
     }
 
@@ -87,7 +89,7 @@ public class DIFactory {
      * Extracts a dependency injectable constructor from the given class.
      *
      * @param type The class.
-     * @param <T>   The type.
+     * @param <T>  The type.
      * @return The dependency injectable constructor.
      * @throws NoSuchMethodException If no dependency injectable constructor was found.
      */
@@ -133,11 +135,24 @@ public class DIFactory {
         }
     }
 
+    private static <T> Optional<T> getImplementation(@NonNull Class<T> type) throws IllegalAccessException {
+        final Optional<Class<? extends T>> optionalImplementation = getImplementationClass(type);
+
+        if (optionalImplementation.isEmpty()) {
+            log.severe("No implementation class found for %s"
+                    .formatted(type.getSimpleName()));
+
+            return Optional.empty();
+        }
+
+        return Optional.ofNullable(getInstance((Class<T>) optionalImplementation.get()));
+    }
+
     /**
      * Creates a dependency injected instance of the given class.
      *
      * @param type The class.
-     * @param <T>   The type.
+     * @param <T>  The type.
      * @return The dependency injected instance.
      * @throws NoSuchMethodException     If no dependency injectable constructor was found.
      * @throws InvocationTargetException
@@ -147,14 +162,7 @@ public class DIFactory {
     private static <T> T createInstance(@NonNull Class<T> type) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
         // if the type we are trying to create, is an interface, scan for any implementation of it...
         if (type.isInterface() || Modifier.isAbstract(type.getModifiers())) {
-            final Optional<Class<? extends T>> optionalImplementation = getImplementation(type);
-
-            if(optionalImplementation.isEmpty()) {
-                log.severe("No implementation found for %s"
-                        .formatted(type.getSimpleName()));
-            }
-
-            return getInstance((Class<T>) optionalImplementation.get());
+            return getImplementation(type).get();
         }
 
         // component if not already registered.
@@ -229,7 +237,7 @@ public class DIFactory {
         }
     }
 
-    private static <T> Optional<Class<? extends T>> getImplementation(@NonNull Class<T> type) {
+    private static <T> Optional<Class<? extends T>> getImplementationClass(@NonNull Class<T> type) {
         return new Reflections(EssentiaInject.getPackageNameList()).getSubTypesOf(type).stream()
                 .findFirst();
     }
