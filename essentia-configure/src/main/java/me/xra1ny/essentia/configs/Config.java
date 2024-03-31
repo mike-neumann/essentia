@@ -34,7 +34,8 @@ public abstract class Config {
         try {
             fileProcessor.save(fileProcessor.serialize(this));
         } catch (Exception e) {
-            log.severe("error while saving config");
+            e.printStackTrace();
+            throw new RuntimeException("error while saving config");
         }
     }
 
@@ -51,12 +52,14 @@ public abstract class Config {
                 // after everything has worked without problem, inject field of our config with the values now retrievable...
                 injectFields(fileProcessor.load(getClass()));
             } catch (Exception e) {
-                log.severe("error while injecting fields for config %s with processor %s"
+                e.printStackTrace();
+                throw new RuntimeException("error while injecting fields for config %s with processor %s"
                         .formatted(fileName, processor.getSimpleName()));
             }
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
                  InvocationTargetException e) {
-            log.severe("error while creating config file processor %s for config %s"
+            e.printStackTrace();
+            throw new RuntimeException("error while creating config file processor %s for config %s"
                     .formatted(processor.getSimpleName(), fileName));
         }
     }
@@ -77,7 +80,8 @@ public abstract class Config {
                             .formatted(fileName));
                 }
             } catch (IOException e) {
-                log.severe("error while creating config file %s"
+                e.printStackTrace();
+                throw new RuntimeException("error while creating config file %s"
                         .formatted(fileName));
             }
         }
@@ -110,10 +114,12 @@ public abstract class Config {
                 setter.invoke(this, value);
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
-            log.severe("error while injecting field %s with %s"
+            e.printStackTrace();
+            throw new RuntimeException("error while injecting field %s with %s"
                     .formatted(field.getName(), String.valueOf(value)));
         } catch (NoSuchMethodException e) {
-            log.severe("cannot find java bean declaration for field %s"
+            e.printStackTrace();
+            throw new RuntimeException("cannot find java bean declaration for field %s"
                     .formatted(field.getName()));
         }
     }

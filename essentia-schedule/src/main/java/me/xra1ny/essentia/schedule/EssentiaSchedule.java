@@ -48,7 +48,8 @@ public class EssentiaSchedule {
                                     try {
                                         method.invoke(this);
                                     } catch (IllegalAccessException | InvocationTargetException e) {
-                                        log.severe("error while invoking scheduled method %s"
+                                        e.printStackTrace();
+                                        throw new RuntimeException("error while invoking scheduled method %s"
                                                 .formatted(method.getName()));
                                     }
                                 }
