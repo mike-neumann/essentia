@@ -52,7 +52,7 @@ public class DIFactory {
         if (EssentiaInject.getDiContainer().isRegisteredByType(type)) {
             recursiveChain.remove(type);
 
-            return EssentiaInject.getDiContainer().getComponentByType(type)
+            return Optional.ofNullable(EssentiaInject.getDiContainer().getComponentByType(type))
                     .orElseThrow();
         }
 
@@ -81,7 +81,7 @@ public class DIFactory {
         } catch (NoSuchMethodException | InstantiationException | InvocationTargetException |
                  IllegalAccessException e) {
             // attempt to return any implementation of the requested component.
-            return getImplementation(type)
+            return Optional.ofNullable(getImplementation(type))
                     .orElseThrow(() -> new RuntimeException("error while fetching component %s"
                             .formatted(type.getSimpleName())));
         }
@@ -137,17 +137,17 @@ public class DIFactory {
         }
     }
 
-    private static <T> Optional<T> getImplementation(@NonNull Class<T> type) throws IllegalAccessException {
-        final Optional<Class<? extends T>> optionalImplementation = getImplementationClass(type);
+    private static <T> T getImplementation(@NonNull Class<T> type) throws IllegalAccessException {
+        final Optional<Class<? extends T>> optionalImplementation = Optional.ofNullable(getImplementationClass(type));
 
         if (optionalImplementation.isEmpty()) {
             log.severe("No implementation class found for %s"
                     .formatted(type.getSimpleName()));
 
-            return Optional.empty();
+            return null;
         }
 
-        return Optional.ofNullable(getInstance((Class<T>) optionalImplementation.get()));
+        return getInstance((Class<T>) optionalImplementation.get());
     }
 
     /**
@@ -164,7 +164,7 @@ public class DIFactory {
     private static <T> T createInstance(@NonNull Class<T> type) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
         // if the type we are trying to create, is an interface, scan for any implementation of it...
         if (type.isInterface() || Modifier.isAbstract(type.getModifiers())) {
-            return getImplementation(type).get();
+            return getImplementation(type);
         }
 
         // component if not already registered.
@@ -188,7 +188,7 @@ public class DIFactory {
             }
 
             if (EssentiaInject.getDiContainer().isRegisteredByType(parameterType)) {
-                constructorParameterList.add(EssentiaInject.getDiContainer().getComponentByType(parameterType)
+                constructorParameterList.add(Optional.ofNullable(EssentiaInject.getDiContainer().getComponentByType(parameterType))
                         .orElseThrow());
             } else {
                 // else create new component instance and register.
@@ -239,8 +239,9 @@ public class DIFactory {
         }
     }
 
-    private static <T> Optional<Class<? extends T>> getImplementationClass(@NonNull Class<T> type) {
+    private static <T> Class<? extends T> getImplementationClass(@NonNull Class<T> type) {
         return new Reflections(EssentiaInject.getPackageNameList()).getSubTypesOf(type).stream()
-                .findFirst();
+                .findFirst()
+                .orElse(null);
     }
 }

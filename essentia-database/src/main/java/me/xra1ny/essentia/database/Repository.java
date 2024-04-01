@@ -31,18 +31,18 @@ public abstract class Repository<Entity, Id> {
      * @return {@code true} if an entity with the specified identifier exists, otherwise {@code false}.
      */
     public final boolean existsById(@NonNull Id id) {
-        return findById(id).isPresent();
+        return Optional.ofNullable(findById(id)).isPresent();
     }
 
     /**
      * Finds an entity by its identifier.
      *
      * @param id The identifier of the entity.
-     * @return An {@link Optional} containing the entity if found, or an empty {@link Optional} if not found.
+     * @return The fetched entity; or null.
      */
-    public final Optional<Entity> findById(@NonNull Id id) {
+    public final Entity findById(@NonNull Id id) {
         try (Session session = database.getSessionFactory().openSession()) {
-            return Optional.ofNullable(session.get(managedEntityType(), id));
+            return session.get(managedEntityType(), id);
         }
     }
 
@@ -65,13 +65,13 @@ public abstract class Repository<Entity, Id> {
         }
     }
 
-    public final Optional<Entity> findByValue(@NonNull String attribute, @NonNull Object value) {
-        return findAllByValues(Map.entry(attribute, value)).stream().findFirst();
+    public final Entity findByValue(@NonNull String attribute, @NonNull Object value) {
+        return findAllByValues(Map.entry(attribute, value)).stream().findFirst().orElse(null);
     }
 
     @SafeVarargs
-    public final Optional<Entity> findByValues(@NonNull Map.Entry<String, Object> @NonNull ... values) {
-        return findAllByValues(values).stream().findFirst();
+    public final Entity findByValues(@NonNull Map.Entry<String, Object> @NonNull ... values) {
+        return findAllByValues(values).stream().findFirst().orElse(null);
     }
 
     public final List<Entity> findAllByValue(@NonNull String attribute, @NonNull Object value) {

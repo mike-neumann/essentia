@@ -11,8 +11,8 @@ import java.util.Optional;
 /**
  * The {@link Database} class represents a component responsible for managing database connections.
  *
- * @apiNote Must be annotated with {@link DatabaseInfo}.
  * @author xRa1ny
+ * @apiNote Must be annotated with {@link DatabaseInfo}.
  */
 public class Database {
     /**
@@ -36,7 +36,7 @@ public class Database {
         this.configuration = new Configuration().configure(vitalDatabaseInfo.value());
     }
 
-    public void registerRepository(@NonNull Repository<?,?> repository) {
+    public void registerRepository(@NonNull Repository<?, ?> repository) {
         configuration.addAnnotatedClass(repository.managedEntityType());
         repository.setDatabase(this);
     }

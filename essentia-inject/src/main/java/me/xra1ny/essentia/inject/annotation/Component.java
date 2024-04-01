@@ -17,16 +17,16 @@ public @interface Component {
     /**
      * Specifies any dependencies for this annotated class member.
      *
-     * @apiNote Any specified dependencies will be initialised before the annotated member is initialised.
      * @return The dependencies of this annotated class member.
+     * @apiNote Any specified dependencies will be initialised before the annotated member is initialised.
      */
     Class<?>[] dependsOn() default {};
 
     /**
      * Specifies any dependencies to initialise after the annotated member is initialised.
      *
-     * @apiNote Any specified classes will be initialised AFTER the annotated member is.
      * @return The dependencies to initialise after the annotated member.
+     * @apiNote Any specified classes will be initialised AFTER the annotated member is.
      */
     Class<?>[] after() default {};
 }

@@ -19,16 +19,16 @@ public @interface ConfigInfo {
     /**
      * Defines the file name for the annotated {@link Config}.
      *
-     * @apiNote Includes the file extension (e.g test.yml; test.properties)
      * @return The file name
+     * @apiNote Includes the file extension (e.g test.yml; test.properties)
      */
     String name();
 
     /**
      * Defines the {@link FileProcessor} used by this config.
      *
-     * @apiNote {@link FileProcessor}s are used to process config files.
      * @return The processor used by this config.
+     * @apiNote {@link FileProcessor}s are used to process config files.
      */
     Class<? extends FileProcessor> processor();
 }

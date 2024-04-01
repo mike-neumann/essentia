@@ -27,13 +27,13 @@ public class EssentiaExcept {
     private static List<Method> getExceptionHandlerMethods() {
         return new Reflections(packageNames, new MethodAnnotationsScanner()).getMethodsAnnotatedWith(ExceptionHandler.class).stream()
                 .filter(method -> {
-                    if(!Modifier.isStatic(method.getModifiers())) {
+                    if (!Modifier.isStatic(method.getModifiers())) {
                         throw new ExceptionHandlerMethodNotStaticException(method);
                     }
 
                     final ExceptionHandler exceptionHandler = method.getAnnotation(ExceptionHandler.class);
 
-                    if(method.getParameterCount() != 1 && !method.getParameterTypes()[0].equals(exceptionHandler.value())) {
+                    if (method.getParameterCount() != 1 && !method.getParameterTypes()[0].equals(exceptionHandler.value())) {
                         throw new ExceptionHandlerMethodInvalidSignatureException(method);
                     }
 

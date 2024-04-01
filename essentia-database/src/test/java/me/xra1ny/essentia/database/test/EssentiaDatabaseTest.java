@@ -24,7 +24,7 @@ public class EssentiaDatabaseTest {
         log.info("testEntities: %s"
                 .formatted(testEntities));
 
-        final Optional<TestEntity> optionalTestEntity = testRepository.findByValue("username", "name1");
+        final Optional<TestEntity> optionalTestEntity = Optional.ofNullable(testRepository.findByValue("username", "name1"));
 
         log.info(optionalTestEntity.toString());
     }

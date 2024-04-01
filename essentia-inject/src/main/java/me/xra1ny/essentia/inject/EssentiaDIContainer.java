@@ -16,7 +16,7 @@ public class EssentiaDIContainer implements DIContainer {
 
     @Override
     public void registerComponent(@NonNull Object object) {
-        if(isRegistered(object)) {
+        if (isRegistered(object)) {
             return;
         }
 

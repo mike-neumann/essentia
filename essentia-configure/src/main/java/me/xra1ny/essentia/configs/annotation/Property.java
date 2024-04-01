@@ -21,8 +21,8 @@ public @interface Property {
     /**
      * Defines the class types this annotated field manages.
      *
-     * @apiNote When annotating a {@link List} or {@link Map}, specify their generic types.
      * @return The classes this annotated field manages.
+     * @apiNote When annotating a {@link List} or {@link Map}, specify their generic types.
      */
     Class<?>[] value();
 }

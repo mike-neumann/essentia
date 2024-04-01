@@ -3,12 +3,12 @@ package me.xra1ny.essentia.configs.processor;
 import lombok.NonNull;
 import me.xra1ny.essentia.configs.Config;
 import me.xra1ny.essentia.configs.annotation.Property;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Describes an object which is capable of processing the contents of a given config file.
@@ -34,7 +34,6 @@ public interface FileProcessor {
     Object read(@NonNull String key);
 
     /**
-     *
      * Reads a config value by the specified key, if that value was not found, returns a default value.
      *
      * @param key The key.
@@ -60,7 +59,7 @@ public interface FileProcessor {
     /**
      * Writes the given value to this config.
      *
-     * @param key The key of this value.
+     * @param key   The key of this value.
      * @param value The value.
      * @throws Exception If any error occurs while writing the value.
      */
@@ -87,7 +86,7 @@ public interface FileProcessor {
      * Deserializes the given serialized map to the specified object type.
      *
      * @param serializedContentMap The serialized content.
-     * @param type The type to deserialize to.
+     * @param type                 The type to deserialize to.
      * @return The deserialized object.
      * @throws Exception If any error occurs while deserializing.
      */
@@ -122,14 +121,15 @@ public interface FileProcessor {
     /**
      * Fetches a field of the given type by its property string.
      *
-     * @param type The type to fetch the field from.
+     * @param type     The type to fetch the field from.
      * @param property The property key of the annotated field.
-     * @return An {@link Optional} holding either the field of the property key; or empty.
+     * @return The fetched field; or null.
      */
-    @NonNull
-    default Optional<Field> getFieldByProperty(@NonNull Class<?> type, @NonNull String property) {
+    @Nullable
+    default Field getFieldByProperty(@NonNull Class<?> type, @NonNull String property) {
         return getPropertyFieldsFromType(type).stream()
                 .filter(field -> field.getName().equals(property))
-                .findFirst();
+                .findFirst()
+                .orElse(null);
     }
 }

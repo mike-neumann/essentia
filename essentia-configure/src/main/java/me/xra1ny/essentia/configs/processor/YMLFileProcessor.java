@@ -69,7 +69,7 @@ public class YMLFileProcessor implements FileProcessor {
             yaml.addTypeDescription(typeDescription);
 
             // add type descriptors for annotated property types...
-            for(Class<?> propertyType : property.value()) {
+            for (Class<?> propertyType : property.value()) {
                 addTypeDescriptors(propertyType);
             }
 
@@ -153,7 +153,7 @@ public class YMLFileProcessor implements FileProcessor {
             // default constructor was found, inject field properties...
             serializedContentMap
                     .forEach((key, value) -> {
-                        final Optional<Field> optionalField = getFieldByProperty(type, key);
+                        final Optional<Field> optionalField = Optional.ofNullable(getFieldByProperty(type, key));
 
                         optionalField.ifPresent(field -> {
                             try {

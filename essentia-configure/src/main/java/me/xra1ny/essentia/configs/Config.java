@@ -75,7 +75,7 @@ public abstract class Config {
             try {
                 final boolean fileCreated = file.createNewFile();
 
-                if(fileCreated) {
+                if (fileCreated) {
                     log.info("%s config file created"
                             .formatted(fileName));
                 }
@@ -92,7 +92,7 @@ public abstract class Config {
     private void injectFields(@NonNull Map<String, ?> serializedContentMap) {
         serializedContentMap
                 .forEach((key, value) -> {
-                    final Optional<Field> optionalField = fileProcessor.getFieldByProperty(getClass(), key);
+                    final Optional<Field> optionalField = Optional.ofNullable(fileProcessor.getFieldByProperty(getClass(), key));
 
                     optionalField.ifPresent(field -> injectField(field, value));
                 });
@@ -101,10 +101,10 @@ public abstract class Config {
     private void injectField(@NonNull Field field, @Nullable Object value) {
         try {
             // check for visibility...
-            if(Modifier.isPublic(field.getModifiers())) {
+            if (Modifier.isPublic(field.getModifiers())) {
                 // if public then inject directly...
                 field.set(this, value);
-            }else {
+            } else {
                 // if not, search for bean setter...
                 final String beanSetterName = "set%s%s"
                         .formatted(field.getName().toUpperCase().substring(0, 1),

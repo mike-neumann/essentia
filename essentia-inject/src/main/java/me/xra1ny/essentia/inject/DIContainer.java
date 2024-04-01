@@ -4,7 +4,6 @@ import lombok.NonNull;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Singleton component container which holds dependency injected object instances.
@@ -51,14 +50,15 @@ public interface DIContainer {
      * Gets the requested component object instance.
      *
      * @param type The class.
-     * @param <T>   The type.
-     * @return The component object instance.
+     * @param <T>  The type.
+     * @return The component object instance; or null.
      */
-    default <T> Optional<T> getComponentByType(@NonNull Class<T> type) {
+    default <T> T getComponentByType(@NonNull Class<T> type) {
         return getComponentClassObjectMap().entrySet().stream()
                 .filter(entry -> entry.getKey().equals(type))
                 .map(Map.Entry::getValue)
                 .map(type::cast)
-                .findFirst();
+                .findFirst()
+                .orElse(null);
     }
 }

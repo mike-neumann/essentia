@@ -96,7 +96,7 @@ public class PropertiesFileProcessor implements FileProcessor {
             // default constructor was found, inject field properties...
             serializedContentMap
                     .forEach((key, value) -> {
-                        final Optional<Field> optionalField = getFieldByProperty(type, key);
+                        final Optional<Field> optionalField = Optional.ofNullable(getFieldByProperty(type, key));
 
                         optionalField.ifPresent(field -> {
                             try {
@@ -110,7 +110,7 @@ public class PropertiesFileProcessor implements FileProcessor {
                     });
 
             return object;
-        }catch(NoSuchMethodException e) {
+        } catch (NoSuchMethodException e) {
             // default constructor not found, attempt to get constructor matching properties...
             final Constructor<?> constructor = type.getConstructor(getPropertyFieldsFromType(type).stream().map(Object::getClass).toArray(Class[]::new));
 
