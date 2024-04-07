@@ -1,6 +1,7 @@
 package me.xra1ny.essentia.inject;
 
 import lombok.NonNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -14,11 +15,13 @@ public interface DIContainer {
     @NonNull
     Map<Class<?>, Object> getComponentClassObjectMap();
 
+    @NonNull
     default List<Object> getComponents() {
         return getComponentClassObjectMap().values().stream()
                 .toList();
     }
 
+    @Nullable
     default <T> List<T> getComponentsByType(@NonNull Class<T> type) {
         return getComponents().stream()
                 .filter(component -> type.isAssignableFrom(component.getClass()))
@@ -53,6 +56,7 @@ public interface DIContainer {
      * @param <T>  The type.
      * @return The component object instance; or null.
      */
+    @Nullable
     default <T> T getComponentByType(@NonNull Class<T> type) {
         return getComponentClassObjectMap().entrySet().stream()
                 .filter(entry -> entry.getKey().equals(type))
