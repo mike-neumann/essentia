@@ -8,7 +8,9 @@ import me.xra1ny.essentia.configs.processor.FileProcessor;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Optional;
 
@@ -94,33 +96,20 @@ public abstract class Config {
                 .forEach((key, value) -> {
                     final Optional<Field> optionalField = Optional.ofNullable(fileProcessor.getFieldByProperty(getClass(), key));
 
-                    optionalField.ifPresent(field -> injectField(field, value));
+                    optionalField.ifPresent(field -> injectField(Config.this, field, value));
                 });
     }
 
-    private void injectField(@NonNull Field field, @Nullable Object value) {
+    public static void injectField(@NonNull Object accessor, @NonNull Field field, @Nullable Object value) {
         try {
-            // check for visibility...
-            if (Modifier.isPublic(field.getModifiers())) {
-                // if public then inject directly...
-                field.set(this, value);
-            } else {
-                // if not, search for bean setter...
-                final String beanSetterName = "set%s%s"
-                        .formatted(field.getName().toUpperCase().substring(0, 1),
-                                field.getName().substring(1));
-                final Method setter = getClass().getMethod(beanSetterName, field.getType());
-
-                setter.invoke(this, value);
-            }
-        } catch (IllegalAccessException | InvocationTargetException e) {
+            // force field to be accessible even if private
+            // this is needed for injection...
+            field.setAccessible(true);
+            field.set(accessor, value);
+        } catch (IllegalAccessException e) {
             e.printStackTrace();
             throw new RuntimeException("error while injecting field %s with %s"
                     .formatted(field.getName(), String.valueOf(value)));
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-            throw new RuntimeException("cannot find java bean declaration for field %s"
-                    .formatted(field.getName()));
         }
     }
 }

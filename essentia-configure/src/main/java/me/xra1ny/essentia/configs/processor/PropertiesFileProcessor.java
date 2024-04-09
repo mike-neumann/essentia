@@ -3,6 +3,7 @@ package me.xra1ny.essentia.configs.processor;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.java.Log;
+import me.xra1ny.essentia.configs.Config;
 
 import java.io.File;
 import java.io.FileReader;
@@ -98,15 +99,7 @@ public class PropertiesFileProcessor implements FileProcessor {
                     .forEach((key, value) -> {
                         final Optional<Field> optionalField = Optional.ofNullable(getFieldByProperty(type, key));
 
-                        optionalField.ifPresent(field -> {
-                            try {
-                                field.set(object, value);
-                            } catch (IllegalAccessException e) {
-                                e.printStackTrace();
-                                throw new RuntimeException("error while deserializing properties config field %s"
-                                        .formatted(field.getName()));
-                            }
-                        });
+                        optionalField.ifPresent(field -> Config.injectField(object, field, value));
                     });
 
             return object;

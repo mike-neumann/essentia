@@ -2,6 +2,7 @@ package me.xra1ny.essentia.configs.processor;
 
 import lombok.Getter;
 import lombok.NonNull;
+import me.xra1ny.essentia.configs.Config;
 import me.xra1ny.essentia.configs.annotation.Property;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
@@ -132,6 +133,9 @@ public class YMLFileProcessor implements FileProcessor {
                 .map(field -> {
                     try {
                         // else use default snakeyaml mapping.
+                        // force field to be accessible even if private
+                        field.setAccessible(true);
+
                         return new AbstractMap.SimpleEntry<>(field.getName(), field.get(object));
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -155,15 +159,7 @@ public class YMLFileProcessor implements FileProcessor {
                     .forEach((key, value) -> {
                         final Optional<Field> optionalField = Optional.ofNullable(getFieldByProperty(type, key));
 
-                        optionalField.ifPresent(field -> {
-                            try {
-                                field.set(object, value);
-                            } catch (IllegalAccessException e) {
-                                e.printStackTrace();
-                                throw new RuntimeException("error while deserializing yml config field %s"
-                                        .formatted(field.getName()));
-                            }
-                        });
+                        optionalField.ifPresent(field -> Config.injectField(object, field, value));
                     });
 
             return object;
