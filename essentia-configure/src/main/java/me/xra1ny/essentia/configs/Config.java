@@ -4,8 +4,8 @@ import lombok.NonNull;
 import lombok.extern.java.Log;
 import me.xra1ny.essentia.configs.annotation.ConfigInfo;
 import me.xra1ny.essentia.configs.processor.FileProcessor;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
