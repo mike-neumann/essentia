@@ -7,3 +7,71 @@
 5. `publishToMavenLocal` using Gradle
 
 ## Usage
+## Essentia Inject
+When using `essentia-inject`, dependency management is no longer manual, every dependency will be managed automatically by essentia  
+Heres a short breakdown:
+1. You can use inject's default di container without any configuration to manage dependencies.  
+But you can always implement your OWN DiContainer and tell essentia to use it, if you want to have more control of what happens to components within your application.
+2. When running inject, essentia scans for classes annotated with `@Component`, and attempts to create a new instance of said class, when essentia detects, that no default constructor is available for that annotated class, essentia scans for constructors, which only have arguments, that are of types, that are also annotated with `@Component`
+3. When inject detects said classes, it initializes them too, registering those to the DiContainer
+4. In short: When using `essentia-inject` you can annotate your classes with `@Component` to have an instance of that class which you can pass around everywhere in your code.
+5. Examples:
+```
+@Component
+class MyComponent {
+    // has no custom constructor, thus no dependencies...
+}
+
+```
+```
+@Component
+class MyComponent2 {
+    private final MyComponent myComponent;
+
+    // this is a custom constructor, which defines a dependency on MyComponent, which is also a @Component
+    // since it is also a @Component, just like the class we are currently in, essentia does all the work for you!
+    // you DO NOT NEED TO CREATE A NEW INSTANCE OF THIS CLASS
+    // inject does all that for you!!!
+    public MyComponent2(MyComponent myComponent) {
+        this.myComponent = myComponent:        
+    }
+}
+```
+```
+@Component
+class MyComponent3 {
+    private final MyComponent myComponent;
+    private final MyComponent2 myComponent2;
+
+    // this custom constructor has TWO dependencies, both are a @Component, just like the class we are currently in
+    // because of that, INJECT can do all the work for you and inject both dependencies.
+    public MyComponent3(MyComponent myComponent, MyComponent2 myComponent2) {
+        this.myComponent = myComponent;
+        this.myComponent2 = myComponent2;
+    }
+}
+```
+
+Missing component annotation
+```
+class MyComponent4 {
+    private MyComponent myComponent;
+
+    // this custom constructor also has a dependency
+    // but look at the class signature we have in the current class
+    // WE HAVE NOT ANNOTATED THIS CLASS AS A COMPONENT
+    // THUS INJECT WILL IGNORE THIS CLASS AND WONT REGISTER IT
+    // THIS CLASS CANNOT BE USED AS A DEPENDENCY SINCE IT IS NOT MARKED AS A @Component
+    public MyComponent4(MyComponent myComponent) {
+        this.myComponent = myComponent;
+    }
+}
+```
+
+*Also be aware of circular dependencies, you cannot create a circular dependency, e.g:*  
+
+`MyComponent -> MyComponent2 AND MyComponent2 -> MyComponent` (X)  
+
+This will fail in an endless loop within `essentia-inject` and will warn you of a circular dependency between two components...  
+
+NOTE: You can define as many components and as many dependencies as you wish, there is no limit on how many `essentia-inject` can handle
