@@ -75,3 +75,45 @@ class MyComponent4 {
 This will fail in an endless loop within `essentia-inject` and will warn you of a circular dependency between two components...  
 
 NOTE: You can define as many components and as many dependencies as you wish, there is no limit on how many `essentia-inject` can handle
+
+*ANY CLASS CAN BE A @Component*!!!!!!
+
+---
+
+## Essentia Configure
+When using Essentia, you can implement easy object based configs within your project.  
+Those configs can read a config file and represent its state using a complex object mapping system.  
+It goes as follows:
+```
+@ConfigInfo(name = "myconfig.yml", processor = YMLFileProcessor.class) // here we define our config name / location where it is stored, as well as the processor implementation we want to use for this configuration file. (ALWAYS DOUBLE CHECK THE FILE PROCESSOR IF SOMETHING ISNT WORKING)
+public class MyConfig extends Config {
+    // now we can define our config properties as variables on this class.
+    // PLEASE NOTE THAT THESE VARIABLE _MUST_ BE public OR ELSE ESSENTIA CANNOT REFERENCE THEM!!!
+
+    // here we define the type that we want to save into the config.
+    // this makes sure that the mapping for this type is working fine.
+    @Property(String.class)
+    public String someString = "";
+
+    // you can also specify YOUR OWN type to save in the config
+    // PLEASE NOTE THOUGH, THAT THIS TYPE _MUST_ HAVE A _DEFAULT CONSTRUCTOR_ OR ELSE ESSENTIA CANNOT REFERENCE ITS TYPE!!!
+    @Property(MyOwnClass.class)
+    public MyOwnClass myOwnClass = null;
+}
+```
+```
+public class MyOwnClass {
+    // the properties on this complex type we are trying to save within the config must also be public and marked with @Property(...)
+    @Property(String.class)
+    public String someValueInComplex = null;
+}
+```
+Once we defined our config, we can create an instance of that config, which will then load the file into the class object we created...
+`MyConfig myConfig = new MyConfig();`
+
+To manipulate the config, we just change the values of the properties within this class' instance and call the `save()` method on it...
+`myConfig.someString = "test";`
+`myConfig.save();`
+Now the config is saved to disc.
+
+NOTE: You can also annotate this class with `@Component` if you are using `essentia-inject` (ANY CLASS CAN BE A @Component!!!!!!!!!!)
