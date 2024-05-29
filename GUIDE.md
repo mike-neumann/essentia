@@ -112,7 +112,7 @@ Once we defined our config, we can create an instance of that config, which will
 `MyConfig myConfig = new MyConfig();`
 
 To manipulate the config, we just change the values of the properties within this class' instance and call the `save()` method on it...  
-`myConfig.someString = "test";`
+`myConfig.someString = "test";`  
 `myConfig.save();`
 Now the config is saved to disc.
 
