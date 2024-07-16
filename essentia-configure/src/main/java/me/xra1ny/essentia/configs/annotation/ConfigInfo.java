@@ -2,6 +2,7 @@ package me.xra1ny.essentia.configs.annotation;
 
 import me.xra1ny.essentia.configs.Config;
 import me.xra1ny.essentia.configs.processor.FileProcessor;
+import org.springframework.stereotype.Component;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -15,6 +16,7 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
+@Component
 public @interface ConfigInfo {
     /**
      * Defines the file name for the annotated {@link Config}.
